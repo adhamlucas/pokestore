@@ -9,6 +9,8 @@ import ShoppingCart from '../../Components/ShoppingCart';
 
 const Home = () => {
   const [pokemon, setPokemon] = useState([]);
+  const [shoppingCart, setShoppingCart] = useState([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
 
@@ -57,36 +59,70 @@ const Home = () => {
   const generatePrice = (height, weight) => (height + weight);
 
   const buyItem = (id, name, price, image) => {
-    let shopping = localStorage.getItem('shoppingCart');
+    const orderIndex = filterPokemonOrder(id);
 
-    if (shopping == null) {
-      const test = {
-        shopping: {},
-      };
-
-      test['shopping'][id] = {
-        name,
-        price,
-        image,
-        quantity: 1,
-      };
-
-      localStorage.setItem('shoppingCart', JSON.stringify(test));
-      console.log("hello");
-
+    if (orderIndex >= 0) {
+      const newShoppingCart = shoppingCart;
+      newShoppingCart[orderIndex].quantity += 1;
+      // newShoppingCart[orderIndex].price = price * newShoppingCart[orderIndex].quantity;
+      setShoppingCart(newShoppingCart);
+      const totalPrice = calculateTotal(newShoppingCart);
+      setTotal(totalPrice);
       return;
     }
 
-    shopping = JSON.parse(shopping);
-
-    shopping['shopping'][id] = {
+    const order = {
+      id,
       name,
       price,
       image,
       quantity: 1,
     };
 
-    localStorage.setItem('shoppingCart', JSON.stringify(shopping));
+    const newShoppingCart = [...shoppingCart, order];
+    const totalPrice = calculateTotal(newShoppingCart);
+    setTotal(totalPrice);
+    setShoppingCart(newShoppingCart);
+
+    // // let shopping = localStorage.getItem('shoppingCart');
+
+    // // if (shopping == null) {
+    // //   const test = {
+    // //     shopping: {},
+    // //   };
+
+    // //   test['shopping'][id] = {
+    // //     name,
+    // //     price,
+    // //     image,
+    // //     quantity: 1,
+    // //   };
+
+    // //   localStorage.setItem('shoppingCart', JSON.stringify(test));
+    // //   console.log("hello");
+
+    // //   return;
+    // }
+
+    // shopping = JSON.parse(shopping);
+
+    // shopping['shopping'][id] = {
+    //   name,
+    //   price,
+    //   image,
+    //   quantity: 1,
+    // };
+
+    // localStorage.setItem('shoppingCart', JSON.stringify(shopping));
+  };
+
+  const calculateTotal = (orders) => {
+    const sum = (acumulator, nextElement) => (acumulator + (nextElement.price * nextElement.quantity));
+    return orders.reduce(sum, 0);
+  };
+
+  const filterPokemonOrder = (id) => {
+    return shoppingCart.findIndex((element) => (element.id === id));
   };
 
   return (
@@ -120,7 +156,7 @@ const Home = () => {
           </div>
         </div>
 
-        <ShoppingCart />
+        <ShoppingCart orders={shoppingCart} total={total} />
 
       </main>
     </div>

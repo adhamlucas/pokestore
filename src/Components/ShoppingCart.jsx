@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useDebugValue } from 'react';
 import styled from 'styled-components';
 import { FiMinusCircle, FiPlusCircle } from 'react-icons/fi';
 
@@ -58,6 +58,13 @@ const Button = styled.div`
   }
 `;
 
+const TotalContainer = styled.div`
+  display:flex;
+  justify-content: space-between;
+  padding: 16px;
+  border-top: 1px solid black;
+`;
+
 const ButtonBuy = styled.button`
   width: 100%;
   height: 30px;
@@ -75,45 +82,16 @@ const ButtonBuy = styled.button`
 `;
 
 
-// <div className="shopping-cart">
-// <div className="orders">
-//   <div className="order">
-//     <div className="order-image">
-//       <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/132.png" alt="colocar o nome do pokemon" />
-//     </div>
-//     <div className="order-informations">
-//       <p className="order-name">Ditto</p>
-//       <p className="order-quantity">1</p>
-//       <p className="order-price">R$ 40,00</p>
-//     </div>
-
-//     <div className="order-buttons">
-//       <button type="button" className="order-plus">+</button>
-//       <button type="button" className="order-minus">-</button>
-//     </div>
-//   </div>
-// </div>
-
-// <div className="order-total">
-//   <p>Total</p>
-//   <p className="order-total-price">R$ 40,00</p>
-// </div>
-
-// <button type="button" className="order-button-buy">
-//   Comprar
-// </button>
-// </div>
-
-const Order = () => {
+const Order = ({name, price, image, quantity}) => {
   return (
     <OrderContainer>
       <OrderImage>
-        <Image src="https://pokeres.bastionbot.org/images/pokemon/3.png" />
+        <Image src={image} />
       </OrderImage>
       <OrderInformationsContainer>
-        <OrderInformation>Bulbassaur</OrderInformation>
-        <OrderInformation>R$ 40,00</OrderInformation>
-        <OrderInformation>1</OrderInformation>
+        <OrderInformation>{name}</OrderInformation>
+        <OrderInformation>R$ {price}</OrderInformation>
+        <OrderInformation>{quantity}</OrderInformation>
       </OrderInformationsContainer>
 
       <OrderButtonsContainer>
@@ -129,18 +107,31 @@ const Order = () => {
 };
 
 
-const ShoppingCart = () => {
+const ShoppingCart = ({orders, total}) => {
   return (
     <ShoppingCartContainer>
       <Orders>
-        <Order />
-        <Order />
-        <Order />
-        <Order />
+        {orders.map((order, index) => (
+          <Order
+            key={index}
+            name={order.name}
+            price={order.price}
+            image={order.image}
+            quantity={order.quantity}
+          />
+        ))}
       </Orders>
+
+      <TotalContainer>
+        <p style={{fontSize: '18px' }}>Total</p>
+        <p style={{fontSize: '18px', fontWeight: "bold"}}>R$ {total}</p>
+      </TotalContainer>
+
       <ButtonBuy>Comprar</ButtonBuy>
     </ShoppingCartContainer>
   );
 };
+
+
 
 export default ShoppingCart;
