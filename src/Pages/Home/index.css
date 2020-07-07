@@ -104,3 +104,26 @@ main {
 .item-buy-button:hover {
   opacity: 0.7;
 }
+
+.pagination-container {
+  min-width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.pagination-container button {
+  border-style: none;
+  height: 40px;
+  margin: 8px 8px;
+  padding: 8px;
+  font-size: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  color: white;
+  background-color: #3d7dca;
+  transition: 0.3s;
+}
+
+.pagination-container button:hover {
+  background-color: rgb(85, 145, 219);
+}

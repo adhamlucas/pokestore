@@ -43,13 +43,14 @@ const ItemBuyBytton = styled.button`
   font-size: 18px;
   font-weight: 500px;
   color: white;
+  cursor: pointer;
   transition: 0.3s;
   &:hover {
     opacity: 0.7;
   }
 `;
 
-const Card = ({name, price, image }) => {
+const Card = ({name, price, image, clickBuyItem, id }) => {
   return (
     <Item>
       <ItemContent>
@@ -60,7 +61,7 @@ const Card = ({name, price, image }) => {
           <ItemName>{name}</ItemName>
           <ItemPrice>R$ {price}</ItemPrice>
         </div>
-        <ItemBuyBytton>Comprar</ItemBuyBytton>
+        <ItemBuyBytton onClick={() => clickBuyItem(id, name, price, image)}>Comprar</ItemBuyBytton>
       </ItemContent>
     </Item>
   );

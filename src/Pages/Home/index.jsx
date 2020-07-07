@@ -3,21 +3,91 @@ import { FiSearch } from 'react-icons/fi';
 import axios from 'axios';
 import './index.css';
 
-import CardItem from '../../Components/old/CardItem';
+// import CardItem from '../../Components/old/CardItem';
 import Card from '../../Components/Card';
+import ShoppingCart from '../../Components/ShoppingCart';
 
 const Home = () => {
-  const imageTestUrl = 'https://pokeres.bastionbot.org/images/pokemon/132.png';
   const [pokemon, setPokemon] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
-    const fetchPokemon = async () => {
-      const { data } = await axios.get('https://pokeapi.co/api/v2/pokemon/?offset=0&limit=20');
-      setPokemon(data.results);
+    getPokemonData(page);
+  }, []);
+
+  const getPokemonData = async (pageNumber) => {
+    const { data } = await axios.get(`https://pokeapi.co/api/v2/pokemon/?offset=${pageNumber}&limit=20`);
+    await getPokemon(data.results);
+    setLoading(false);
+  };
+
+  const getPokemon = async (pokeData) => {
+    const pokemonData = await Promise.all(pokeData.map(async (item) => {
+      const { data } = await axios.get(item.url);
+      const poke = {
+        id: data.id,
+        name: data.name,
+        price: generatePrice(data.height, data.weight),
+        image: `https://pokeres.bastionbot.org/images/pokemon/${data.id}.png`,
+      };
+
+      return poke;
+    }));
+    console.log(pokemonData);
+    setPokemon(pokemonData);
+  };
+
+  const nextPage = () => {
+    setLoading(true);
+    const pageNumber = page + 20;
+    getPokemonData(pageNumber);
+    setPage(pageNumber);
+    setLoading(false);
+  };
+
+  const previousPage = () => {
+    setLoading(true);
+    const pageNumber = (page - 20) < 0 ? 0 : (page - 20);
+    getPokemonData(pageNumber);
+    setPage(pageNumber);
+    setLoading(false);
+  };
+
+  const generatePrice = (height, weight) => (height + weight);
+
+  const buyItem = (id, name, price, image) => {
+    let shopping = localStorage.getItem('shoppingCart');
+
+    if (shopping == null) {
+      const test = {
+        shopping: {},
+      };
+
+      test['shopping'][id] = {
+        name,
+        price,
+        image,
+        quantity: 1,
+      };
+
+      localStorage.setItem('shoppingCart', JSON.stringify(test));
+      console.log("hello");
+
+      return;
+    }
+
+    shopping = JSON.parse(shopping);
+
+    shopping['shopping'][id] = {
+      name,
+      price,
+      image,
+      quantity: 1,
     };
 
-    fetchPokemon();
-  }, []);
+    localStorage.setItem('shoppingCart', JSON.stringify(shopping));
+  };
 
   return (
     <div className="home">
@@ -32,62 +102,26 @@ const Home = () => {
 
       <main>
         <div className="items-container">
-          {pokemon.map((item) => (
+          {loading ? <></> : (pokemon.map((item) => (
             <Card
+              key={item.id}
+              id={item.id}
               name={item.name}
-              image="https://pokeres.bastionbot.org/images/pokemon/6.png"
+              price={item.price}
+              image={item.image}
+              clickBuyItem={buyItem}
             />
-          ))}
+          )))}
 
-          <Card name="Ditto" price="50,00" image={imageTestUrl} />
 
-          <CardItem name="Adham" price="40,00" image={imageTestUrl} />
-
-          <div className="item">
-            <div className="item-content">
-              <div className="item-image">
-                <img src="https://pokeres.bastionbot.org/images/pokemon/132.png" alt="" />
-              </div>
-              <div className="item-informations">
-                <p className="item-name">Ditto</p>
-                <p className="item-price">R$ 40,00</p>
-              </div>
-              <button className="item-buy-button" type="button">
-                Comprar
-              </button>
-            </div>
+          <div className="pagination-container">
+            <button onClick={() => previousPage()} type="button">Anterior</button>
+            <button onClick={() => nextPage()} type="button">Próxima</button>
           </div>
-
         </div>
 
-        <div className="shopping-cart">
-          <div className="orders">
-            <div className="order">
-              <div className="order-image">
-                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/132.png" alt="colocar o nome do pokemon" />
-              </div>
-              <div className="order-informations">
-                <p className="order-name">Ditto</p>
-                <p className="order-quantity">1</p>
-                <p className="order-price">R$ 40,00</p>
-              </div>
+        <ShoppingCart />
 
-              <div className="order-buttons">
-                <button type="button" className="order-plus">+</button>
-                <button type="button" className="order-minus">-</button>
-              </div>
-            </div>
-          </div>
-
-          <div className="order-total">
-            <p>Total</p>
-            <p className="order-total-price">R$ 40,00</p>
-          </div>
-
-          <button type="button" className="order-button-buy">
-            Comprar
-          </button>
-        </div>
       </main>
     </div>
   );
