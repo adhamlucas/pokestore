@@ -17,7 +17,8 @@ const Home = () => {
 
   useEffect(() => {
     getPokemonData(page);
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
 
   useEffect(() => {
     const localShoppingCart = JSON.parse(getLocalStorageShoppingCart());
@@ -55,7 +56,7 @@ const Home = () => {
   const nextPage = () => {
     setLoading(true);
     const pageNumber = page + 20;
-    getPokemonData(pageNumber);
+    // getPokemonData(pageNumber);
     setPage(pageNumber);
     setLoading(false);
   };
@@ -63,7 +64,7 @@ const Home = () => {
   const previousPage = () => {
     setLoading(true);
     const pageNumber = (page - 20) < 0 ? 0 : (page - 20);
-    getPokemonData(pageNumber);
+    // getPokemonData(pageNumber);
     setPage(pageNumber);
     setLoading(false);
   };
