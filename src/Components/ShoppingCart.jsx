@@ -92,7 +92,6 @@ const ButtonBuy = styled.button`
 const Text = styled.div`
   font-size: ${(props) => (props.title ? '32px' : '18px')};
   font-weight: ${(props) => ((props.price || props.title) ? 'bold' : '500')}
-
 `;
 
 
@@ -133,7 +132,7 @@ const ShoppingCart = ({orders, total, plusPokemonOrderQuantity, minusPokemonOrde
   return (
     <ShoppingCartContainer>
       <ShoppingCartTitle>
-        <Text title>Carrinho</Text>
+        <Text title="true">Carrinho</Text>
         <FiShoppingCart size='24px'/>
       </ShoppingCartTitle>
       <Orders>
@@ -160,7 +159,5 @@ const ShoppingCart = ({orders, total, plusPokemonOrderQuantity, minusPokemonOrde
     </ShoppingCartContainer>
   );
 };
-
-
 
 export default ShoppingCart;
