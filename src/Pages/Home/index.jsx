@@ -3,9 +3,9 @@ import { FiSearch } from 'react-icons/fi';
 import axios from 'axios';
 import './index.css';
 
-// import CardItem from '../../Components/old/CardItem';
 import Card from '../../Components/Card';
 import ShoppingCart from '../../Components/ShoppingCart';
+import Modal from '../../Components/Modal';
 
 const Home = () => {
   const [pokemon, setPokemon] = useState([]);
@@ -13,10 +13,23 @@ const Home = () => {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
+  const [showModal, setShowModal] = useState(true);
 
   useEffect(() => {
     getPokemonData(page);
   }, []);
+
+  useEffect(() => {
+    const localShoppingCart = JSON.parse(getLocalStorageShoppingCart());
+    if (localShoppingCart) {
+      setShoppingCart(localShoppingCart);
+      setTotal(calculateTotal(localShoppingCart));
+    }
+  }, []);
+
+  useEffect(() => {
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }, [page]);
 
   const getPokemonData = async (pageNumber) => {
     const { data } = await axios.get(`https://pokeapi.co/api/v2/pokemon/?offset=${pageNumber}&limit=20`);
@@ -36,7 +49,6 @@ const Home = () => {
 
       return poke;
     }));
-    console.log(pokemonData);
     setPokemon(pokemonData);
   };
 
@@ -62,12 +74,10 @@ const Home = () => {
     const orderIndex = filterPokemonOrder(id);
 
     if (orderIndex >= 0) {
-      const newShoppingCart = shoppingCart;
-      newShoppingCart[orderIndex].quantity += 1;
-      // newShoppingCart[orderIndex].price = price * newShoppingCart[orderIndex].quantity;
-      setShoppingCart(newShoppingCart);
-      const totalPrice = calculateTotal(newShoppingCart);
+      shoppingCart[orderIndex].quantity += 1;
+      const totalPrice = calculateTotal(shoppingCart);
       setTotal(totalPrice);
+      setLocalStorageShoppingCart(shoppingCart);
       return;
     }
 
@@ -83,46 +93,78 @@ const Home = () => {
     const totalPrice = calculateTotal(newShoppingCart);
     setTotal(totalPrice);
     setShoppingCart(newShoppingCart);
-
-    // // let shopping = localStorage.getItem('shoppingCart');
-
-    // // if (shopping == null) {
-    // //   const test = {
-    // //     shopping: {},
-    // //   };
-
-    // //   test['shopping'][id] = {
-    // //     name,
-    // //     price,
-    // //     image,
-    // //     quantity: 1,
-    // //   };
-
-    // //   localStorage.setItem('shoppingCart', JSON.stringify(test));
-    // //   console.log("hello");
-
-    // //   return;
-    // }
-
-    // shopping = JSON.parse(shopping);
-
-    // shopping['shopping'][id] = {
-    //   name,
-    //   price,
-    //   image,
-    //   quantity: 1,
-    // };
-
-    // localStorage.setItem('shoppingCart', JSON.stringify(shopping));
+    setLocalStorageShoppingCart(newShoppingCart);
   };
 
   const calculateTotal = (orders) => {
-    const sum = (acumulator, nextElement) => (acumulator + (nextElement.price * nextElement.quantity));
+    const sum = (acumulator, nextElement) => (
+      acumulator + (nextElement.price * nextElement.quantity)
+    );
     return orders.reduce(sum, 0);
   };
 
   const filterPokemonOrder = (id) => {
     return shoppingCart.findIndex((element) => (element.id === id));
+  };
+
+  const plusPokemonOrderQuantity = (id) => {
+    const orderIndex = filterPokemonOrder(id);
+    const newShoppingCart = shoppingCart;
+
+    newShoppingCart[orderIndex].quantity += 1;
+    const totalPrice = calculateTotal(newShoppingCart);
+    setShoppingCart(newShoppingCart);
+    setTotal(totalPrice);
+    setLocalStorageShoppingCart(newShoppingCart);
+  };
+
+  const minusPokemonOrderQuantity = (id) => {
+    const orderIndex = filterPokemonOrder(id);
+    const newShoppingCart = shoppingCart;
+
+    if (newShoppingCart[orderIndex].quantity === 1) {
+      removePokemonOrder(newShoppingCart[orderIndex].id);
+      return;
+    }
+
+    newShoppingCart[orderIndex].quantity -= 1;
+    const totalPrice = calculateTotal(newShoppingCart);
+    setShoppingCart(newShoppingCart);
+    setTotal(totalPrice);
+    setLocalStorageShoppingCart(newShoppingCart);
+  };
+
+  const removePokemonOrder = (id) => {
+    const newShoppingCart = shoppingCart.filter((order) => (order.id !== id));
+    const totalPrice = calculateTotal(newShoppingCart);
+    setShoppingCart(newShoppingCart);
+    setTotal(totalPrice);
+    setLocalStorageShoppingCart(newShoppingCart);
+  };
+
+  const endShopping = () => {
+    setShoppingCart([]);
+    setLocalStorageShoppingCart([]);
+    setTotal(0);
+    setShowModal(true);
+  };
+
+  const setLocalStorageShoppingCart = (newShoppingCart) => {
+    localStorage.setItem('pokemonShoppingCart', JSON.stringify(newShoppingCart));
+  };
+
+  const getLocalStorageShoppingCart = () => {
+    const local = localStorage.getItem('pokemonShoppingCart');
+
+    if (local) {
+      return local;
+    }
+
+    return null;
+  };
+
+  const hideModal = () => {
+    setShowModal(false);
   };
 
   return (
@@ -156,8 +198,15 @@ const Home = () => {
           </div>
         </div>
 
-        <ShoppingCart orders={shoppingCart} total={total} />
+        <ShoppingCart
+          orders={shoppingCart}
+          total={total}
+          minusPokemonOrderQuantity={minusPokemonOrderQuantity}
+          plusPokemonOrderQuantity={plusPokemonOrderQuantity}
+          endShopping={endShopping}
+        />
 
+        {showModal && <Modal hideModal={() => hideModal} />}
       </main>
     </div>
   );

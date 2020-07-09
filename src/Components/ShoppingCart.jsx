@@ -1,6 +1,6 @@
-import React, { useDebugValue } from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import { FiMinusCircle, FiPlusCircle } from 'react-icons/fi';
+import { FiMinusCircle, FiPlusCircle, FiShoppingCart } from 'react-icons/fi';
 
 const ShoppingCartContainer = styled.div`
   width: 20%;
@@ -9,6 +9,14 @@ const ShoppingCartContainer = styled.div`
 `;
 
 const Orders = styled.div`
+`;
+
+const ShoppingCartTitle = styled.h1`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 1px solid black;
 `;
 
 const OrderContainer = styled.div`
@@ -81,8 +89,22 @@ const ButtonBuy = styled.button`
   }
 `;
 
+const Text = styled.div`
+  font-size: ${(props) => (props.title ? '32px' : '18px')};
+  font-weight: ${(props) => ((props.price || props.title) ? 'bold' : '500')}
 
-const Order = ({name, price, image, quantity}) => {
+`;
+
+
+const Order = ({
+  id,
+  name,
+  price,
+  image,
+  quantity,
+  plusPokemonOrderQuantity,
+  minusPokemonOrderQuantity,
+}) => {
   return (
     <OrderContainer>
       <OrderImage>
@@ -95,10 +117,10 @@ const Order = ({name, price, image, quantity}) => {
       </OrderInformationsContainer>
 
       <OrderButtonsContainer>
-        <Button>
+        <Button onClick={() => plusPokemonOrderQuantity(id)}>
           <FiPlusCircle size="30px" />
         </Button>
-        <Button>
+        <Button onClick={() => minusPokemonOrderQuantity(id)}>
           <FiMinusCircle size="30px" />
         </Button>
       </OrderButtonsContainer>
@@ -107,27 +129,34 @@ const Order = ({name, price, image, quantity}) => {
 };
 
 
-const ShoppingCart = ({orders, total}) => {
+const ShoppingCart = ({orders, total, plusPokemonOrderQuantity, minusPokemonOrderQuantity, endShopping}) => {
   return (
     <ShoppingCartContainer>
+      <ShoppingCartTitle>
+        <Text title>Carrinho</Text>
+        <FiShoppingCart size='24px'/>
+      </ShoppingCartTitle>
       <Orders>
-        {orders.map((order, index) => (
+        {orders.map((order) => (
           <Order
-            key={index}
+            key={order.id}
+            id={order.id}
             name={order.name}
             price={order.price}
             image={order.image}
             quantity={order.quantity}
+            plusPokemonOrderQuantity={plusPokemonOrderQuantity}
+            minusPokemonOrderQuantity={minusPokemonOrderQuantity}
           />
         ))}
       </Orders>
 
       <TotalContainer>
-        <p style={{fontSize: '18px' }}>Total</p>
-        <p style={{fontSize: '18px', fontWeight: "bold"}}>R$ {total}</p>
+        <Text>Total</Text>
+        <Text price>R$ {total}</Text>
       </TotalContainer>
 
-      <ButtonBuy>Comprar</ButtonBuy>
+      <ButtonBuy onClick={() => endShopping()}>Comprar</ButtonBuy>
     </ShoppingCartContainer>
   );
 };
